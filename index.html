@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Bearing</title>
+        <meta name="description" content"A single page daily orientation">
+        <meta name="author" content="Brian Hurt <bhurt42@gmail.com>">
+        <style>
+            html {
+                max-width: 100%;
+                height: 98%;
+                box-sizing: border-box;
+            }
+            body {
+                max-width: 100%;
+                height: 98%;
+                box-sizing: border-box;
+            }
+
+            .frame {
+                max-width: 100%;
+                height: 98%;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                border: 5px double black;
+            }
+
+            .greeting {
+                max-width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+                font-size: 4vw;
+                border-bottom: 2px solid #808080;
+                padding-top: 1vw;
+                padding-bottom: 1vw;
+            }
+
+            .calendar {
+                max-width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                background: #FFFFC0;
+                border-bottom: 2px solid #808080;
+            }
+
+            .todayis {
+                font-size: 2vw;
+                margin-left: 2vw;
+                margin-right: 2vw;
+                margin-top: 1vw;
+            }
+
+            .datetime {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                font-size: 3vw;
+                margin-left: 2vw;
+                margin-right: 2vw;
+                margin-bottom: 1vw;
+            }
+
+            .weather {
+                display: flex;
+                flex-direction: column;
+                max-width: 100%;
+                box-sizing: border-box;
+                display: flex;
+                background: #E0E0FF;
+                border-bottom: 2px solid #808080;
+            }
+
+            .weather_label {
+                font-size: 2vw;
+                margin-left: 2vw;
+                margin-right: 2vw;
+                margin-bottom: 1vw;
+                margin-top: 1vw;
+            }
+
+            .weather_forecast {
+                font-size: 2vw;
+                margin-left: 2vw;
+                margin-right: 2vw;
+                margin-bottom: 1vw;
+            }
+
+        </style>
+
+                
+    </head>
+    <body>
+        <div class="frame">
+            <div class="greeting" id="greeting">
+                Hello, world!
+            </div>
+            <div class="calendar">
+                <div class="todayis">
+                    Today is...
+                </div>
+                <div class="datetime">
+                    <span id="date">
+                        Date not set
+                    </span>
+                    <span id="time">
+                        Time not set
+                    </span>
+                </div>
+            </div>
+            <div class="weather">
+                <div class="weather_label">
+                    Weather Forecast
+                </div>
+                <div class="weather_forecast" id="weather-0">
+                    No forecast data.
+                </div>
+                <div class="weather_forecast" id="weather-1">
+                    No forecast data.
+                </div>
+                <div class="weather_forecast" id="weather-2">
+                    No forecast data.
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+
+        /******************************************************************
+         ***                                                            ***
+         ***                          Greeting                          ***
+         ***                                                            ***
+         ******************************************************************/
+
+        function setGreeting(now) {
+            var hour = now.getHours();
+            var txt;
+
+            if ((hour < 6) || (hour >= 22)) {
+                txt = "Good Night";
+            } else if (hour < 12) {
+                txt = "Good Morning";
+            } else if (hour < 17) {
+                txt = "Good Afternoon";
+            } else {
+                txt = "Good Evening";
+            }
+            var elem = document.getElementById("greeting");
+            elem.textContent = txt;
+        }
+        callEveryHour(setGreeting);
+
+
+        /******************************************************************
+         ***                                                            ***
+         ***                            Date                            ***
+         ***                                                            ***
+         ******************************************************************/
+
+        function setDate(now) {
+            const dayNames = [ "Sunday", "Monday", "Tuesday", "Wednesday",
+                                "Thursday", "Friday", "Saturday" ]
+            const monthNames = [ "January", "Feburary", "March", "April",
+                                    "May", "June", "July", "August",
+                                    "September", "October", "November",
+                                    "December" ]
+            var dateTxt = dayNames[now.getDay()]
+                            + ", "
+                            + now.getDate()
+                            + " "
+                            + monthNames[ now.getMonth() ]
+                            + " "
+                            + now.getFullYear();
+            var elem = document.getElementById("date");
+            elem.textContent = dateTxt;
+        }
+        callEveryDay(setDate);
+
+        /******************************************************************
+         ***                                                            ***
+         ***                            Time                            ***
+         ***                                                            ***
+         ******************************************************************/
+
+        function setTime (now) {
+            var hour = now.getHours();
+            var timeTxt = ((hour > 12)?(hour - 12):((hour == 0)?12:hour))
+                            + ":"
+                            + now.getMinutes()
+                            + " "
+                            + (hour > 11?"PM":"AM");
+            var elem = document.getElementById("time");
+            elem.textContent = timeTxt;
+        }
+        callEveryMinute(setTime);
+
+        /******************************************************************
+         ***                                                            ***
+         ***                          Weather                           ***
+         ***                                                            ***
+         ******************************************************************/
+
+        const weatherLat = 41.647446112171934;
+        const weatherLng = -91.57182854003487;
+        const weatherUserAgent = "(Bearings Web Page, bhurt42@gmail.com)"
+
+        var weatherUrl = null;
+
+        function setWeather() {
+            if (weatherUrl == null) {
+                getWeatherUrl();
+            } else {
+                getForecast();
+            }
+        }
+        callEveryHour(setWeather);
+
+        function getWeatherUrl() {
+            console.log("Getting the weather URL");
+            const req = fetch(
+                            ("https://api.weather.gov/points/"
+                                + weatherLat + "," + weatherLng),
+                            {
+                                headers: {
+                                    'User-Agent':  weatherUserAgent,
+                                    'Accept': 'application/ld+json'
+                                }
+                            });
+            req
+                .then(resp => resp.json().then(setWeatherUrl))
+                .catch(noWeatherUrl);
+        }
+
+        function setWeatherUrl(resp) {
+            console.log("Got the weather URL");
+            weatherUrl = resp.forecast;
+            getForecast();
+        }
+
+        function noWeatherUrl(err) {
+            console.log("Failed to get the weather url: " + err);
+        }
+
+        function getForecast() {
+            console.log("In getForecast");
+            const req = fetch(weatherUrl,
+                            {
+                                headers: {
+                                    'User-Agent':  weatherUserAgent
+                                }
+                            });
+            req
+                .then(resp => resp.json().then(setForecast))
+                .catch(noForecast);
+        }
+
+        function setForecast(resp) {
+            const periods = resp.properties.periods;
+            for (var i = 0; i < 3; ++i) {
+                const elem = document.getElementById("weather-" + i);
+                if (i < periods.length) {
+                    const c = resp.properties.periods[i];
+                    elem.textContent = 
+                        c.name
+                        + ": "
+                        + c.temperature
+                        + "°"
+                        + c.temperatureUnit
+                        + " "
+                        + c.shortForecast;
+                    elem.removeAttribute("hidden");
+                } else {
+                    elem.setAttribute("hidden", "true");
+                    elem.textContent = "No forecast weather data.";
+                }
+            }
+        }
+
+        function noForecast(err) {
+            console.log("Failed to get the forecast: " + err);
+        }
+
+        /******************************************************************
+         ***                                                            ***
+         ***                           Update                           ***
+         ***                                                            ***
+         ******************************************************************/
+
+        var minutely;
+        var hourly;
+        var daily;
+
+        function callEveryMinute(f) {
+            if (typeof minutely == 'undefined') {
+                minutely = new Array();
+            }
+            minutely.push(f);
+        }
+
+        function callEveryHour(f) {
+            if (typeof hourly == 'undefined') {
+                hourly = new Array();
+            }
+            hourly.push(f);
+        }
+
+        function callEveryDay(f) {
+            if (typeof daily == 'undefined') {
+                daily = new Array();
+            }
+            daily.push(f);
+        }
+
+        var lastMinute;
+        var lastHour;
+        var lastDay;
+
+        function initializeUpdate() {
+            if (typeof minutely == 'undefined') {
+                minutely = new Array();
+            }
+            if (typeof hourly == 'undefined') {
+                hourly = new Array();
+            }
+            if (typeof daily == 'undefined') {
+                daily = new Array();
+            }
+            lastMinute = null;
+            lastHour = null;
+            lastDay = null;
+        }
+
+        function doUpdate() {
+            var now = new Date();
+            if (now.getMinutes() === lastMinute) {
+                return;
+            }
+            lastMinute = now.getMinutes();
+            minutely.forEach(f => f(now));
+
+            if (now.getHours() == lastHour) {
+                return;
+            }
+            lastHour = now.getHours();
+            hourly.forEach(f => f(now));
+
+            if (now.getDate() == lastDay) {
+                return;
+            }
+            lastDay = now.getDate();
+            daily.forEach(f => f(now));
+        }
+
+        initializeUpdate();
+        doUpdate();
+        var updateId = window.setInterval(doUpdate, 5000);
+
+    </script>
+</html>
+
