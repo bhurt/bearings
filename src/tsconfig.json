@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES6",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "../work/all.js",
+    "sourceRoot": "./src/",
+    "sourceMap": true,
+    "module": "amd",
+    "moduleResolution": "node"
+  }
+}
+
