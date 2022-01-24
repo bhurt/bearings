@@ -1,0 +1,61 @@
+@charset "utf-8";
+
+html, body {
+    height: 98%;
+    width: 98%;
+}
+
+.frame {
+    height: 98%;
+    width: 98%;
+    border: 5px double black;
+}
+
+.report {
+    border-bottom: 2px solid #808080;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
+    padding-left: 2vw;
+    margin-right: 2vw;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
+.fullWidth {
+    max-width: 98%;
+    width: 98%;
+}
+
+.center {
+    text-align: center;
+    justify-content: center;
+}
+
+.mainText {
+    font-size: 3vw;
+}
+
+.altText {
+    font-size: 2vw;
+}
+
+.pullLeft {
+    margin-right: auto;
+}
+
+.pullRight {
+    margin-left: auto;
+}
+
+
+
+
+
